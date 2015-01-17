@@ -2,6 +2,7 @@
 
 ```r
 library(lattice)
+library(ggplot2)
 library(nnet)
 ```
 
@@ -16,7 +17,8 @@ unlink(temp)
 The required histogram of the number of steps is as follows: 
 
 ```r
-hist(data$steps)
+stepsperday<-aggregate(steps ~ date, data, sum)
+hist(stepsperday$steps)
 ```
 
 ![plot of chunk unnamed-chunk-3](./PA1_template_files/figure-html/unnamed-chunk-3.png) 
@@ -24,22 +26,22 @@ hist(data$steps)
 ## What is mean total number of steps taken per day?
 
 ```r
-mean(data$steps, na.rm=TRUE)
+mean(stepsperday$steps, na.rm=TRUE)
 ```
 
 ```
-## [1] 37.38
+## [1] 10766
 ```
 
 ```r
-median(data$steps,na.rm=TRUE)
+median(stepsperday$steps,na.rm=TRUE)
 ```
 
 ```
-## [1] 0
+## [1] 10765
 ```
 ## What is the average daily activity pattern?
-The "time series plot" of the 5-minute interval and the average number of steps taken, averaged across all days.
+The "time series plot" of the 5-minute interval and the average number of steps taken, averaged across all days.  
 
 ```r
 aggdata<-aggregate(steps ~ interval, data, mean)
@@ -47,7 +49,8 @@ xyplot(aggdata$steps~aggdata$interval,type="l")
 ```
 
 ![plot of chunk unnamed-chunk-5](./PA1_template_files/figure-html/unnamed-chunk-5.png) 
-The maximum value of steps is found at the following interval : 
+  
+The maximum value of steps is found at the interval 835: 
 
 ```r
 index<-which.is.max(aggdata$steps)
@@ -74,25 +77,49 @@ for (index in 1:length(a)) {
 Now, the histogram, mean and median of steps are the following: 
 
 ```r
-hist(dataNoNa$steps)
+stepsperday2<-aggregate(steps ~ date, dataNoNa, sum)
+hist(stepsperday2$steps)
 ```
 
 ![plot of chunk unnamed-chunk-8](./PA1_template_files/figure-html/unnamed-chunk-8.png) 
 
 ```r
-mean(dataNoNa$steps)
+mean(stepsperday2$steps, na.rm=TRUE)
 ```
 
 ```
-## [1] 37.38
+## [1] 10766
 ```
 
 ```r
-median(dataNoNa$steps)
+median(stepsperday2$steps,na.rm=TRUE)
 ```
 
 ```
-## [1] 0
+## [1] 10766
 ```
-
+The impact of imputing the missing data on these measures is very small; only the median is changed, and only slightly. 
 ## Are there differences in activity patterns between weekdays and weekends?
+A new factor variable is created, indicating whether it is the weekend or not. 
+
+```r
+dates<-as.Date.factor(dataNoNa$date)
+weekdays<-weekdays(dates)
+weekend<-which(weekdays=="Samedi"|weekdays=="Dimanche") ##These are in French automatically; I have not fought this battle. 
+week<-which(weekdays!="Samedi"&weekdays!="Dimanche")
+dataNoNa$weekornot<-c(dataNoNa$date)
+dataNoNa$weekornot[week]<-0
+dataNoNa$weekornot[weekend]<-1
+dataNoNa$weekornot<-factor(dataNoNa$weekornot,levels=c(0,1),labels<-c("weekdays","weekend"))
+```
+Now, the plot is created. 
+
+```r
+aggdata2<-aggregate(dataNoNa$steps,list(interval=dataNoNa$interval,weekornot=dataNoNa$weekornot), mean)
+qplot(interval,x,data=aggdata2,facets=weekornot~.,geom="line",ylab="steps")
+```
+
+![plot of chunk unnamed-chunk-10](./PA1_template_files/figure-html/unnamed-chunk-10.png) 
+
+
+
