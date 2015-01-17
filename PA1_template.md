@@ -2,7 +2,6 @@
 
 ```r
 library(lattice)
-library(ggplot2)
 library(nnet)
 ```
 
@@ -116,7 +115,7 @@ Now, the plot is created.
 
 ```r
 aggdata2<-aggregate(dataNoNa$steps,list(interval=dataNoNa$interval,weekornot=dataNoNa$weekornot), mean)
-qplot(interval,x,data=aggdata2,facets=weekornot~.,geom="line",ylab="steps")
+xyplot(aggdata2$x~aggdata2$interval|aggdata2$weekornot,type="l",ylab="number of steps",layout=c(1,2))
 ```
 
 ![plot of chunk unnamed-chunk-10](./PA1_template_files/figure-html/unnamed-chunk-10.png) 
